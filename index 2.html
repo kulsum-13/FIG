@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>স্বাস্থ্য সেবা - সম্প্রদায় স্বাস্থ্য সহযোগী</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Container Layout */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Voice Assistant Styles */
+        .voice-assistant {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .voice-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #2d8659;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .voice-button:hover {
+            background-color: #236b47;
+            transform: scale(1.05);
+        }
+
+        .voice-button.listening {
+            background-color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        .voice-button.processing {
+            background-color: #f39c12;
+        }
+
+        .voice-conversation {
+            margin-top: 10px;
+            width: 300px;
+            max-height: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .voice-conversation.active {
+            display: block;
+        }
+
+        .conversation-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #e8f5ee;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: #f0f7f3;
+            align-self: flex-start;
+        }
+
+        .voice-status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: #2d8659;
+            color: white;
+            padding: 25px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 20px;
+        }
+
+        .logo h2 {
+            font-size: 1.9rem;
+            margin-bottom: 5px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .logo p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 2px;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            padding: 14px 25px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-menu i {
+            margin-right: 12px;
+            width: 18px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+            background-color: #f9fafb;
+        }
+
+        /* Header with Login */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e8f5ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d8659;
+        }
+
+        .user-info {
+            display: none;
+        }
+
+        .user-info.show {
+            display: block;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #2d8659;
+        }
+
+        .user-type {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* User Points Section */
+        .user-points {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .user-points.show {
+            display: block;
+        }
+
+        .points-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .points-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2d8659;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .points-logo i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .points-title {
+            font-size: 1.3rem;
+            color: #2d8659;
+            font-weight: 600;
+        }
+
+        .points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .point-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #f0f7f3;
+            transition: background-color 0.3s ease;
+        }
+
+        .point-item:hover {
+            background-color: #e5f0ea;
+        }
+
+        .point-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #2d8659;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .point-icon i {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .point-text {
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        /* Services Container */
+        .services-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 40px;
+            justify-content: space-between;
+        }
+
+        .service-card {
+            flex: 1;
+            min-width: 300px;
+            max-width: 350px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .service-image {
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .service-card:hover .service-image img {
+            transform: scale(1.05);
+        }
+
+        .service-content {
+            padding: 20px;
+        }
+
+        .service-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #2d8659;
+            font-weight: 600;
+        }
+
+        .service-content p {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #2d8659;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:hover {
+            background-color: #236b47;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .mission-section h2 {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            color: #2d8659;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .mission-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #f0f7f3;
+            transition: background-color 0.3s ease;
+        }
+
+        .mission-item:hover {
+            background-color: #e5f0ea;
+        }
+
+        .mission-item i {
+            color: #2d8659;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .mission-item span {
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        /* Footer Text */
+        .footer-text {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .footer-text p {
+            font-size: 1rem;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Health-specific styles */
+        .health-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: #e8f5ee;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .health-icon i {
+            color: #2d8659;
+            font-size: 1.2rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+            animation: modalopen 0.4s;
+        }
+
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #2d8659;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2d8659;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .forgot-password {
+            color: #2d8659;
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .tab-container {
+            margin-bottom: 25px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #2d8659;
+            border-bottom-color: #2d8659;
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2d8659;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 2000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* User Dashboard */
+        .user-dashboard {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .user-dashboard.show {
+            display: block;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dashboard-title {
+            font-size: 1.5rem;
+            color: #2d8659;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .dashboard-card i {
+            font-size: 2rem;
+            color: #2d8659;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-card h4 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        .dashboard-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .services-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .service-card {
+                width: 100%;
+                max-width: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .container {
+                flex-direction: column;
+            }
+            
+            .mission-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .voice-conversation {
+                width: 250px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .points-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Healthcare specific animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .service-card:hover .health-icon {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Voice Assistant -->
+    <div class="voice-assistant">
+        <button class="voice-button" id="voiceButton">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <div class="voice-status" id="voiceStatus">শুরু করতে ক্লিক করুন</div>
+        <div class="voice-conversation" id="voiceConversation">
+            <div class="conversation-message ai-message">
+                হ্যালো! আমি আপনার স্বাস্থ্য সহকারী। আজ আমি আপনাকে কিভাবে সাহায্য করতে পারি?
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>স্বাস্থ্য সেবা</h2>
+                <p>সম্প্রদায় স্বাস্থ্য সহযোগী</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> হোম</a></li>
+                <li><a href="#"><i class="fas fa-user-md"></i> স্বাস্থ্যকর্মী</a></li>
+                <li><a href="#"><i class="fas fa-hands-helping"></i> স্বেচ্ছাসেবক</a></li>
+                <li><a href="#"><i class="fas fa-brain"></i> মানসিক স্বাস্থ্য</a></li>
+                <li><a href="#"><i class="fas fa-baby"></i> মাতৃস্বাস্থ্য</a></li>
+                <li><a href="#"><i class="fas fa-child"></i> শিশু স্বাস্থ্য</a></li>
+                <li><a href="#"><i class="fas fa-bullseye"></i> আমাদের ১০ মিশন</a></li>
+                <li><a href="#"><i class="fas fa-phone-alt"></i> জরুরি</a></li>
+                <li><a href="#"><i class="fas fa-info-circle"></i> আমাদের সম্পর্কে</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> যোগাযোগ</a></li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header with Login -->
+            <div class="header">
+                <h1>স্বাস্থ্য সেবায় স্বাগতম</h1>
+                <div class="user-section">
+                    <div class="user-info" id="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <div class="user-name" id="user-name">জন দো</div>
+                            <div class="user-type" id="user-type">রোগী</div>
+                        </div>
+                    </div>
+                    <button class="btn" id="login-btn">লগইন / সাইন আপ</button>
+                    <button class="btn" id="logout-btn" style="display: none;">লগআউট</button>
+                </div>
+            </div>
+
+            <!-- User Points Section (shown when logged in) -->
+            <div class="user-points" id="user-points">
+                <div class="points-header">
+                    <div class="points-logo">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="points-title">আপনার স্বাস্থ্য পয়েন্ট</h3>
+                </div>
+                <div class="points-grid">
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="point-text">সাপ্তাহিক স্বাস্থ্য চেকআপ</div>
+                    </div>
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="point-text">ওষুধ স্মরণ করিয়ে দেওয়া</div>
+                    </div>
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div class="point-text">দৈনিক ব্যায়াম ট্র্যাকিং</div>
+                    </div>
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                        <div class="point-text">পুষ্টি পরিকল্পনা</div>
+                    </div>
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="point-text">হৃদয় স্বাস্থ্য মনিটরিং</div>
+                    </div>
+                    <div class="point-item">
+                        <div class="point-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="point-text">রক্তচাপ ট্র্যাকিং</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Dashboard (shown when logged in) -->
+            <div class="user-dashboard" id="user-dashboard">
+                <div class="dashboard-header">
+                    <h2 class="dashboard-title">আপনার স্বাস্থ্য ড্যাশবোর্ড</h2>
+                    <button class="btn" id="refresh-dashboard">
+                        <i class="fas fa-sync-alt"></i> রিফ্রেশ
+                    </button>
+                </div>
+                <div class="dashboard-content">
+                    <div class="dashboard-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <h4>আসন্ন অ্যাপয়েন্টমেন্ট</h4>
+                        <p>এই সপ্তাহে আপনার ২টি অ্যাপয়েন্টমেন্ট আছে</p>
+                        <button class="btn">সব দেখুন</button>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-pills"></i>
+                        <h4>ওষুধের স্মরণকারী</h4>
+                        <p>আজকে ৩টি ওষুধ খাওয়ার সময় হয়েছে</p>
+                        <button class="btn">পরিচালনা করুন</button>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-heartbeat"></i>
+                        <h4>স্বাস্থ্য রেকর্ড</h4>
+                        <p>২ দিন আগে আপডেট করা হয়েছে</p>
+                        <button class="btn">রেকর্ড দেখুন</button>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-comments"></i>
+                        <h4>বার্তা</h4>
+                        <p>ডাক্তারদের কাছ থেকে ২টি নতুন বার্তা</p>
+                        <button class="btn">বার্তা পড়ুন</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="services-container">
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://img.freepik.com/free-photo/african-american-doctor-talking-her-colleagues-while-working-medical-clinic-coronavirus-pandemic_637285-11170.jpg?semt=ais_hybrid&w=740&q=80" alt="সম্প্রদায় নেটওয়ার্ক">
+                    </div>
+                    <div class="service-content">
+                        <div class="health-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>সম্প্রদায় নেটওয়ার্ক</h3>
+                        <p>প্রয়োজনে সম্প্রদায়কে বিস্তৃত স্বাস্থ্যসেবা প্রদানের জন্য স্বাস্থ্যকর্মীদের সাথে স্বেচ্ছাসেবকদের সংযোগ করা।</p>
+                        <a href="#" class="btn service-action" data-service="community">আরও জানুন</a>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://imageio.forbes.com/specials-images/imageserve/64be02b7bf1aacb9189a6bb9/Young-female-counselor-talks-with-client/960x0.jpg?format=jpg&width=960" alt="মানসিক স্বাস্থ্য সহায়তা">
+                    </div>
+                    <div class="service-content">
+                        <div class="health-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>মানসিক স্বাস্থ্য সহায়তা</h3>
+                        <p>আমাদের সম্প্রদায়ে মানসিক স্বাস্থ্যসেবার জন্য মনস্তাত্ত্বিক সুস্থতা ট্র্যাকিং এবং সংস্থান সরবরাহ করা।</p>
+                        <a href="#" class="btn service-action" data-service="mental">আরও জানুন</a>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://media.istockphoto.com/id/871778784/photo/adorable-baby-boy-claps-during-medical-exam.jpg?s=612x612&w=0&k=20&c=BHWS0ghGxGLsgrfL303jS-bjkAKVqhNF3IbHtNLtUUE=" alt="মাতৃ ও শিশু যত্ন">
+                    </div>
+                    <div class="service-content">
+                        <div class="health-icon">
+                            <i class="fas fa-baby-carriage"></i>
+                        </div>
+                        <h3>মাতৃ ও শিশু যত্ন</h3>
+                        <p>সুস্থ পরিবারের জন্য বিশেষজ্ঞ নির্দেশনা এবং সহায়তা সহ গর্ভাবস্থা এবং শিশু স্বাস্থ্য ট্র্যাকিং।</p>
+                        <a href="#" class="btn service-action" data-service="maternal">আরও জানুন</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mission-section">
+                <h2>আমাদের ১০ মিশন</h2>
+                <div class="mission-grid">
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>সহজলভ্য স্বাস্থ্যসেবা</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>সম্প্রদায় সমর্থন</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>মানসিক সুস্থতা</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>মাতৃ স্বাস্থ্য</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>শিশু বিকাশ</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>স্বাস্থ্য শিক্ষা</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>স্বেচ্ছাসেবক নেটওয়ার্ক</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>প্রযুক্তি সংহতকরণ</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>গ্রামীণ পৌঁছানো</span>
+                    </div>
+                    <div class="mission-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>জরুরি প্রতিক্রিয়া</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-text">
+                <p>সম্প্রদায়ের সবার জন্য স্বাস্থ্যসেবা সহজলভ্য এবং সহজ করার জন্য তৈরি একটি বিস্তৃত প্ল্যাটফর্ম।</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Login/Signup Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="tab-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="login">লগইন</div>
+                    <div class="tab" data-tab="signup">সাইন আপ</div>
+                </div>
+                
+                <!-- Login Tab -->
+                <div class="tab-content active" id="login-tab">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">ইমেল</label>
+                            <input type="email" id="login-email" class="form-control" placeholder="আপনার ইমেল লিখুন" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">পাসওয়ার্ড</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="আপনার পাসওয়ার্ড লিখুন" required>
+                        </div>
+                        <div class="form-options">
+                            <div class="remember-me">
+                                <input type="checkbox" id="remember-me">
+                                <label for="remember-me">মনে রাখুন</label>
+                            </div>
+                            <a href="#" class="forgot-password">পাসওয়ার্ড ভুলে গেছেন?</a>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">লগইন</button>
+                    </form>
+                </div>
+                
+                <!-- Signup Tab -->
+                <div class="tab-content" id="signup-tab">
+                    <form id="signup-form">
+                        <div class="form-group">
+                            <label for="signup-name">পূর্ণ নাম</label>
+                            <input type="text" id="signup-name" class="form-control" placeholder="আপনার পূর্ণ নাম লিখুন" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">ইমেল</label>
+                            <input type="email" id="signup-email" class="form-control" placeholder="আপনার ইমেল লিখুন" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">পাসওয়ার্ড</label>
+                            <input type="password" id="signup-password" class="form-control" placeholder="একটি পাসওয়ার্ড তৈরি করুন" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-type-select">আমি একজন:</label>
+                            <select id="user-type-select" class="form-control">
+                                <option value="patient">রোগী</option>
+                                <option value="health-worker">স্বাস্থ্যকর্মী</option>
+                                <option value="volunteer">স্বেচ্ছাসেবক</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">সাইন আপ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <p id="notification-message"></p>
+    </div>
+
+    <script>
+        // User authentication state
+        let isLoggedIn = false;
+        let currentUser = null;
+
+        // DOM elements
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authModal = document.getElementById('auth-modal');
+        const closeModal = document.querySelector('.close-modal');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const userType = document.getElementById('user-type');
+        const userDashboard = document.getElementById('user-dashboard');
+        const userPoints = document.getElementById('user-points');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
+
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Open modal when login button is clicked
+        loginBtn.addEventListener('click', () => {
+            authModal.style.display = 'block';
+        });
+
+        // Close modal when close button is clicked
+        closeModal.addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                authModal.style.display = 'none';
+            }
+        });
+
+        // Login form submission
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Simulate authentication (in a real app, this would be an API call)
+            if (email && password) {
+                // Extract name from email for demo purposes
+                const name = email.split('@')[0];
+                
+                // Set user state
+                isLoggedIn = true;
+                currentUser = {
+                    name: name.charAt(0).toUpperCase() + name.slice(1),
+                    email: email,
+                    type: 'patient' // Default type for demo
+                };
+                
+                // Update UI
+                updateUserUI();
+                
+                // Show notification
+                showNotification('লগইন সফল! আবার স্বাগতম।');
+                
+                // Close modal
+                authModal.style.display = 'none';
+                
+                // Reset form
+                document.getElementById('login-form').reset();
+            }
+        });
+
+        // Signup form submission
+        document.getElementById('signup-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const userType = document.getElementById('user-type-select').value;
+            
+            // Simulate registration (in a real app, this would be an API call)
+            if (name && email && password) {
+                // Set user state
+                isLoggedIn = true;
+                currentUser = {
+                    name: name,
+                    email: email,
+                    type: userType
+                };
+                
+                // Update UI
+                updateUserUI();
+                
+                // Show notification
+                showNotification('নিবন্ধন সফল! স্বাস্থ্য সেবায় স্বাগতম।');
+                
+                // Close modal
+                authModal.style.display = 'none';
+                
+                // Reset form
+                document.getElementById('signup-form').reset();
+            }
+        });
+
+        // Logout button click
+        logoutBtn.addEventListener('click', () => {
+            isLoggedIn = false;
+            currentUser = null;
+            
+            // Update UI
+            loginBtn.style.display = 'block';
+            logoutBtn.style.display = 'none';
+            userInfo.classList.remove('show');
+            userDashboard.classList.remove('show');
+            userPoints.classList.remove('show');
+            
+            // Show notification
+            showNotification('আপনি সফলভাবে লগ আউট হয়েছেন।');
+        });
+
+        // Update UI based on login state
+        function updateUserUI() {
+            if (isLoggedIn && currentUser) {
+                // Update user info
+                userName.textContent = currentUser.name;
+                userType.textContent = currentUser.type === 'patient' ? 'রোগী' : 
+                                      currentUser.type === 'health-worker' ? 'স্বাস্থ্যকর্মী' : 'স্বেচ্ছাসেবক';
+                
+                // Show user elements
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                userInfo.classList.add('show');
+                userDashboard.classList.add('show');
+                userPoints.classList.add('show');
+                
+                // Customize dashboard based on user type
+                customizeDashboard();
+            }
+        }
+
+        // Customize dashboard based on user type
+        function customizeDashboard() {
+            if (currentUser.type === 'health-worker') {
+                // Update dashboard for health workers
+                document.querySelector('.dashboard-title').textContent = 'স্বাস্থ্যকর্মী ড্যাশবোর্ড';
+                
+                // Update dashboard cards
+                const dashboardCards = document.querySelectorAll('.dashboard-card');
+                dashboardCards[0].querySelector('h4').textContent = 'নির্ধারিত সফর';
+                dashboardCards[0].querySelector('p').textContent = 'এই সপ্তাহে ৫টি সফর নির্ধারিত আছে';
+                
+                dashboardCards[1].querySelector('h4').textContent = 'রোগীর রেকর্ড';
+                dashboardCards[1].querySelector('p').textContent = 'আপনার অধীনে ১২ জন রোগী';
+                
+                dashboardCards[2].querySelector('h4').textContent = 'চিকিৎসা সংস্থান';
+                dashboardCards[2].querySelector('p').textContent = '৩টি নতুন সংস্থান উপলব্ধ';
+                
+                dashboardCards[3].querySelector('h4').textContent = 'সম্প্রদায় ইভেন্ট';
+                dashboardCards[3].querySelector('p').textContent = 'এই মাসে ২টি স্বাস্থ্য ক্যাম্প';
+            } else if (currentUser.type === 'volunteer') {
+                // Update dashboard for volunteers
+                document.querySelector('.dashboard-title').textContent = 'স্বেচ্ছাসেবক ড্যাশবোর্ড';
+                
+                // Update dashboard cards
+                const dashboardCards = document.querySelectorAll('.dashboard-card');
+                dashboardCards[0].querySelector('h4').textContent = 'স্বেচ্ছাসেবক কার্যক্রম';
+                dashboardCards[0].querySelector('p').textContent = 'এই সপ্তাহে ৩টি কার্যক্রম';
+                
+                dashboardCards[1].querySelector('h4').textContent = 'সম্প্রদায় প্রভাব';
+                dashboardCards[1].querySelector('p').textContent = 'এই মাসে ২৫ জনকে সাহায্য করেছেন';
+                
+                dashboardCards[2].querySelector('h4').textContent = 'প্রশিক্ষণ সংস্থান';
+                dashboardCards[2].querySelector('p').textContent = '২টি নতুন প্রশিক্ষণ মডিউল';
+                
+                dashboardCards[3].querySelector('h4').textContent = 'দলের বার্তা';
+                dashboardCards[3].querySelector('p').textContent = 'দল থেকে ৫টি নতুন বার্তা';
+            }
+            // Default dashboard for patients is already set
+        }
+
+        // Refresh dashboard
+        document.getElementById('refresh-dashboard').addEventListener('click', () => {
+            showNotification('সর্বশেষ তথ্য সহ ড্যাশবোর্ড রিফ্রেশ করা হয়েছে।');
+            
+            // Simulate data refresh with animation
+            const dashboardCards = document.querySelectorAll('.dashboard-card');
+            dashboardCards.forEach(card => {
+                card.style.opacity = '0.5';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, 300);
+            });
+        });
+
+        // Service action buttons
+        document.querySelectorAll('.service-action').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (!isLoggedIn) {
+                    showNotification('এই সেবাটি ব্যবহার করার জন্য অনুগ্রহ করে লগইন করুন।');
+                    authModal.style.display = 'block';
+                } else {
+                    const service = button.getAttribute('data-service');
+                    showNotification(`${service === 'community' ? 'সম্প্রদায়' : service === 'mental' ? 'মানসিক স্বাস্থ্য' : 'মাতৃ ও শিশু'} সেবা খোলা হচ্ছে...`);
+                    
+                    // In a real app, this would navigate to the service page
+                    // For demo purposes, we'll just show a notification
+                }
+            });
+        });
+
+        // Show notification function
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Voice Assistant Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            const voiceButton = document.getElementById('voiceButton');
+            const voiceStatus = document.getElementById('voiceStatus');
+            const voiceConversation = document.getElementById('voiceConversation');
+            
+            // Check if browser supports speech recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const SpeechSynthesis = window.speechSynthesis;
+            
+            if (!SpeechRecognition) {
+                voiceStatus.textContent = 'স্পিচ রিকগনিশন সমর্থিত নয়';
+                voiceButton.disabled = true;
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'bn-BD'; // Set language to Bengali
+            
+            let isListening = false;
+            
+            // Health-related responses in Bengali
+            const healthResponses = {
+                "হ্যালো": "হ্যালো! আমি আপনার স্বাস্থ্য সহকারী। আজ আমি আপনাকে কিভাবে সাহায্য করতে পারি?",
+                "সাহায্য": "আমি আপনাকে আমাদের স্বাস্থ্য সেবা, মানসিক স্বাস্থ্য সহায়তা, মাতৃস্বাস্থ্য এবং শিশু স্বাস্থ্য সম্পর্কে তথ্য দিতে পারি। আপনি কি জানতে চান?",
+                "উপসর্গ": "আমি একজন চিকিৎসক নই, তবে আমি সাধারণ তথ্য প্রদান করতে পারি। নির্দিষ্ট চিকিৎসা পরামর্শের জন্য, অনুগ্রহ করে একজন স্বাস্থ্যসেবা প্রদানকারীর সাথে পরামর্শ করুন। আপনি কি আমাদের স্বাস্থ্যকর্মীদের সম্পর্কে তথ্য চান?",
+                "অ্যাপয়েন্টমেন্ট": "আপনি মেনুতে স্বাস্থ্যকর্মী বিভাগের মাধ্যমে আমাদের স্বাস্থ্যকর্মীদের সাথে অ্যাপয়েন্টমেন্ট বুক করতে পারেন। আমি কি আপনাকে সেখানে নিয়ে যেতে পারি?",
+                "জরুরি": "চিকিৎসা জরুরি অবস্থার জন্য, অনুগ্রহ করে তাৎক্ষণিকভাবে আপনার স্থানীয় জরুরি নম্বরে কল করুন। আমাদের প্ল্যাটফর্মেও দ্রুত যোগাযোগের জন্য একটি জরুরি বিভাগ রয়েছে।",
+                "মানসিক স্বাস্থ্য": "আমরা আমাদের কাউন্সেলর এবং স্বেচ্ছাসেবকদের নেটওয়ার্কের মাধ্যমে মানসিক স্বাস্থ্য সহায়তা প্রদান করি। আপনি আমাদের ওয়েবসাইটের মানসিক স্বাস্থ্য বিভাগে আরও তথ্য পেতে পারেন।",
+                "মাতৃস্বাস্থ্য": "আমাদের মাতৃস্বাস্থ্য প্রোগ্রাম গর্ভাবস্থা ট্র্যাকিং, পুষ্টি নির্দেশিকা এবং নতুন মায়েদের জন্য সহায়তা প্রদান করে। আপনি কি আরও তথ্য চান?",
+                "শিশু স্বাস্থ্য": "আমরা শিশু স্বাস্থ্য মনিটরিং, টিকাদানের সময়সূচী এবং বিকাশমূলক নির্দেশিকা প্রদান করি। আরও বিস্তারিত জানতে আমাদের শিশু স্বাস্থ্য বিভাগ দেখুন।",
+                "স্বেচ্ছাসেবক": "আমরা সর্বদা আমাদের সম্প্রদায় স্বাস্থ্য উদ্যোগে সাহায্য করার জন্য স্বেচ্ছাসেবক খুঁজছি। আপনি স্বেচ্ছাসেবক বিভাগে আরও তথ্য পেতে পারেন।",
+                "যোগাযোগ": "আপনি মেনুতে যোগাযোগ বিভাগের মাধ্যমে আমাদের সাথে যোগাযোগ করতে পারেন বা ব্যবসায়িক সময়ে আমাদের হেল্পলাইনে কল করতে পারেন।",
+                "ধন্যবাদ": "স্বাগতম! আজ আর কিছু সাহায্য করতে পারি?",
+                "বিদায়": "বিদায়! আপনার স্বাস্থ্যের যত্ন নিতে মনে রাখবেন। আরও প্রশ্ন থাকলে ফিরে আসতে পারেন।",
+                "লগইন": "আপনি পৃষ্ঠার উপরে লগইন বোতামে ক্লিক করে লগইন করতে পারেন। এটি আপনাকে আপনার ব্যক্তিগত স্বাস্থ্য ড্যাশবোর্ডে অ্যাক্সেস দেবে।",
+                "সাইন আপ": "একটি অ্যাকাউন্ট তৈরি করতে, লগইন বোতামে ক্লিক করুন এবং তারপর সাইন আপ ট্যাব নির্বাচন করুন। আপনি রোগী, স্বাস্থ্যকর্মী বা স্বেচ্ছাসেবক হিসাবে নিবন্ধন করতে পারেন।",
+                "ড্যাশবোর্ড": isLoggedIn ? "আপনার স্বাস্থ্য ড্যাশবোর্ড এখন দৃশ্যমান। এটি আপনার অ্যাপয়েন্টমেন্ট, ওষুধের স্মরণকারী, স্বাস্থ্য রেকর্ড এবং বার্তা দেখায়।" : "আপনার ব্যক্তিগত স্বাস্থ্য ড্যাশবোর্ডে অ্যাক্সেস করার জন্য অনুগ্রহ করে লগইন করুন। আপনি আপনার অ্যাপয়েন্টমেন্ট, ওষুধ এবং স্বাস্থ্য রেকর্ড সম্পর্কে তথ্য পাবেন।"
+            };
+            
+            // Process user input and generate response
+            function processUserInput(input) {
+                const lowerInput = input.toLowerCase();
+                
+                // Check for keywords in the input
+                for (const keyword in healthResponses) {
+                    if (lowerInput.includes(keyword)) {
+                        return healthResponses[keyword];
+                    }
+                }
+                
+                // Default response if no keyword matches
+                return "আমি নিশ্চিত নই যে আমি সেই নির্দিষ্ট প্রশ্নের সাথে কীভাবে সাহায্য করতে পারি। আপনি আমাদের স্বাস্থ্য সেবা, মানসিক স্বাস্থ্য সহায়তা, মাতৃস্বাস্থ্য বা শিশু স্বাস্থ্য সম্পর্কে জিজ্ঞাসা করতে পারেন। নির্দিষ্ট চিকিৎসা পরামর্শের জন্য, অনুগ্রহ করে একজন স্বাস্থ্যসেবা প্রদানকারীর সাথে পরামর্শ করুন।";
+            }
+            
+            // Add message to conversation
+            function addMessage(message, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('conversation-message');
+                messageDiv.classList.add(isUser ? 'user-message' : 'ai-message');
+                messageDiv.textContent = message;
+                voiceConversation.appendChild(messageDiv);
+                voiceConversation.scrollTop = voiceConversation.scrollHeight;
+            }
+            
+            // Speak response
+            function speakResponse(text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.pitch = 1;
+                utterance.rate = 1;
+                utterance.lang = 'bn-BD'; // Set language to Bengali
+                SpeechSynthesis.speak(utterance);
+            }
+            
+            // Handle voice button click
+            voiceButton.addEventListener('click', function() {
+                if (!isListening) {
+                    // Start listening
+                    recognition.start();
+                    isListening = true;
+                    voiceButton.classList.add('listening');
+                    voiceStatus.textContent = 'শোনা হচ্ছে...';
+                    voiceConversation.classList.add('active');
+                } else {
+                    // Stop listening
+                    recognition.stop();
+                    isListening = false;
+                    voiceButton.classList.remove('listening');
+                    voiceStatus.textContent = 'শুরু করতে ক্লিক করুন';
+                }
+            });
+            
+            // Handle speech recognition results
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                voiceStatus.textContent = 'প্রক্রিয়াকরণ...';
+                voiceButton.classList.remove('listening');
+                voiceButton.classList.add('processing');
+                
+                // Add user message to conversation
+                addMessage(transcript, true);
+                
+                // Process and respond
+                setTimeout(() => {
+                    const response = processUserInput(transcript);
+                    addMessage(response);
+                    speakResponse(response);
+                    
+                    voiceButton.classList.remove('processing');
+                    voiceStatus.textContent = 'শুরু করতে ক্লিক করুন';
+                    isListening = false;
+                }, 1000);
+            };
+            
+            // Handle speech recognition errors
+            recognition.onerror = function(event) {
+                voiceStatus.textContent = 'ত্রুটি: ' + event.error;
+                voiceButton.classList.remove('listening');
+                voiceButton.classList.remove('processing');
+                isListening = false;
+                
+                // Add error message to conversation
+                addMessage("দুঃখিত, আমি তা ধরতে পারিনি। আবার চেষ্টা করুন।");
+            };
+            
+            // Handle speech recognition end
+            recognition.onend = function() {
+                if (isListening) {
+                    recognition.stop();
+                    isListening = false;
+                    voiceButton.classList.remove('listening');
+                    voiceButton.classList.remove('processing');
+                    voiceStatus.textContent = 'শুরু করতে ক্লিক করুন';
+                }
+            };
+            
+            // Add active class to navigation items
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
+                    navLinks.forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                });
+            });
+            
+            // Add smooth scroll behavior
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
